@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+        crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <title>Formset with django</title>
+    <style>
+        .margin-top {
+            margin-top: 50px;
+        }
+    </style>
+    <script src="https://unpkg.com/react@15.6.0/dist/react.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@15.6.0/dist/react-dom.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/create-react-class@15.6.0/create-react-class.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/babel-standalone@6.24.2/babel.min.js"></script>
+    <script type="text/babel">
+        // Our source code would go here 
+        const React = window.React; const ReactDOM = window.ReactDOM; const createReactClass = window.createReactClass;
+        
+        const Form = createReactClass({
+            removeForm(e){
+                e.preventDefault()
+                this.props.removeForm(this.props.index) 
+            },
+            render(){
+                const school = `form-${this.props.index}-school`
+                const course = `form-${this.props.index}-course`
+                
+                return (
+                    <div>
+                        <li>
+                            <label for={`id_${school}`}>School:</label>
+                            <input type="text" name={school} id={`id_${school}`} />
+                        </li>
+                        <li>
+                            <label for={`id_${course}`}>Course:</label>
+                            <input type="text" name={course} id={`id_${course}`} />
+                        </li>
+                        {this.props.displayRemoveButton ? 
+                            <button onClick={this.removeForm}>Remove Form</button>
+                            : null}
+                    </div>
+                )
+            }
+        })
+        const Formset = createReactClass({ 
+            getInitialState(){
+                return {
+                    noOfForms:1
+                }
+            },
+            addNewForm(e){
+                e.preventDefault() // So that the default form doesn't submit.
+                this.setState({noOfForms:this.state.noOfForms+1})
+            },
+            removeForm(index){
+                this.setState({noOfForms: this.state.noOfForms-1})
+            },
+            render(){ 
+                return (
+                    <div>
+                        {this.props.management_data.map((d,index)=>
+                            <input key={`management-${index}`} 
+                            type="hidden" name={`form-${d.name}_FORMS`} 
+                            value={d.value} id={`id_form-${d.name}_FORMS`} />
+                            )}
+                            {Array(this.state.noOfForms).fill().map((form,index)=>
+                                <Form key={`form-${index}`} index={index} displayRemoveButton={this.state.noOfForms > 1} 
+                                    removeForm={this.removeForm} />
+                                )}
+                            <button onClick={this.addNewForm}>Add new form</button>
+                        </div>
+                        ) 
+                    } 
+                })
+        const management_data = [
+            {name: "TOTAL", value:1,},
+            {name: "INITIAL", value: 0},
+            {name: "MIN_NUM", value: 0},
+            {name: "MAX_NUM",value: 2}
+        ]
+        ReactDOM.render(
+            <Formset management_data={management_data} />,
+            document.getElementById('formset')
+          )
+    </script>
+</head>
+
+<body>
+    <div class="container margin-top">
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <form method="post">
+                    {% csrf_token %}
+                    <div id="formset">
+                        {{form.as_ul}}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
